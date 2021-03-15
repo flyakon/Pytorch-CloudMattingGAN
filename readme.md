@@ -51,7 +51,7 @@ python test.py --config_file configs/cloud_LSGAN_resnet50_cfg.py
 
 **We will give soon: 1) the meaning of parameters in configuration file; 2) more GAN types supported; 3) model weights file**
 
-#Citation
+# Citation
 
 If you find the code useful, please cite:
 
