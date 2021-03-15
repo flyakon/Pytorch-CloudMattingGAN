@@ -1,0 +1,208 @@
+'''
+
+'''
+mode='train'
+img_size=512
+gan_img_size=128
+config=dict(
+    name='CloudGANMattingNet',
+    generator_cfg=dict(
+        backbone_cfg=dict(
+            name='vgg16_bn',
+            num_classes=None,
+            in_channels=6,
+            pretrained=True,
+            out_keys=('block1','block2','block3','block4','block5')
+        ),
+        head_cfg=dict(
+            name='GeneratorHead',
+            in_channels=512,
+            img_size=img_size,
+            gan_img_size=gan_img_size,
+            feat_channels=(512, 512, 256, 128, 64),
+        ),
+    ),
+    discrimator_cfg=dict(
+        backbone_cfg=dict(
+            name='vgg16_bn',
+            num_classes=None,
+            in_channels=3,
+            pretrained=True,
+            out_keys=None
+        ),
+        head_cfg=dict(
+            name='DiscrimatorHead',
+            num_classes=1,
+            in_channels=512,
+            img_size=img_size,
+        ),
+    ),
+    matting_cfg=dict(
+        backbone_cfg=dict(
+            name='resnet50',
+            num_classes=None,
+            in_channels=3,
+            pretrained=True,
+            out_keys=('block2','block3','block4','block5')
+        ),
+        neck_cfg=dict(
+            in_channels=2048,
+            out_channels=2048,
+        ),
+        head_cfg=dict(
+            name='MattingNeck',
+            in_channels=2048,
+            img_size=img_size,
+            feat_channels=(2048,1024,512,256,64,32)
+        )
+    ),
+    train_cfg=dict(
+        batch_size=1,
+        device='cuda:0',
+        num_epoch=20001,
+        num_workers=1,
+        d_clip=0.1,
+        d_loss_thres=0.1,
+        train_data=dict(
+            in_memory=True,
+            bg_data=dict(
+                data_path=r'../dataset/train/bg_slice',
+                data_format='*.jpg',
+                img_size=img_size,
+                with_name=False,
+                transforms_cfg=dict(
+                    RandomHorizontalFlip=dict(name='RandomHorizontalFlip'),
+                    RandomVerticalFlip=dict(name='RandomVerticalFlip'),
+                    Rotate=dict(name='Rotate'),
+                    RandomCrop=dict(name='RandomCrop',crop_ratio_min=0.5,crop_ratio_max=1.),
+                    # ColorJitter=dict(name='ColorJitter', brightness=0.15, contrast=(0.8, 1.2),
+                    #                  saturation=(0.8, 1.2),hue=(-0.1, 0.1)),
+                    Resize=dict(name='Resize',size=(img_size,img_size)),
+                    ToTensor=dict(name='ToTensor')
+                ),
+            ),
+            thickCloud_data=dict(
+                data_path=r'../dataset/train/thick_slice',
+                data_format='*.jpg',
+                img_size=img_size,
+                with_name=False,
+                transforms_cfg=dict(
+                    RandomHorizontalFlip=dict(name='RandomHorizontalFlip'),
+                    RandomVerticalFlip=dict(name='RandomVerticalFlip'),
+                    Rotate=dict(name='Rotate'),
+                    RandomCrop=dict(name='RandomCrop',crop_ratio_min=0.5,crop_ratio_max=1.),
+                    # ColorJitter=dict(name='ColorJitter', brightness=0.3, contrast=(0.5, 1.5),
+                    #                  saturation=(0.5, 1.5),hue=(-0.3, 0.3)),
+                    Resize=dict(name='Resize',size=(img_size,img_size)),
+                    ToTensor=dict(name='ToTensor')
+                ),
+            ),
+            thinCloud_data=dict(
+                data_path=r'../dataset/train/thin_slice',
+                data_format='*.jpg',
+                img_size=img_size,
+                with_name=False,
+                transforms_cfg=dict(
+                    RandomHorizontalFlip=dict(name='RandomHorizontalFlip'),
+                    RandomVerticalFlip=dict(name='RandomVerticalFlip'),
+                    Rotate=dict(name='Rotate'),
+                    RandomCrop=dict(name='RandomCrop',crop_ratio_min=0.5,crop_ratio_max=1.),
+                    # ColorJitter=dict(name='ColorJitter', brightness=0.3, contrast=(0.5, 1.5),
+                    #                  saturation=(0.5, 1.5),hue=(-0.3, 0.3)),
+                    Resize=dict(name='Resize',size=(img_size,img_size)),
+                    ToTensor=dict(name='ToTensor')
+                ),
+            )
+        ),
+        test_data=dict(
+            thinCloud_data=dict(
+                data_path=r'../dataset/test/thin_slice',
+                data_format='*.jpg',
+                img_size=img_size,
+                with_label=True,
+                with_name=False,
+                with_systhesis=False,
+                transforms_cfg=dict(
+                    Resize=dict(name='Resize',size=(img_size,img_size)),
+                    ToTensor=dict(name='ToTensor')
+                ),
+            ),
+            thickCloud_data=dict(
+                data_path=r'../dataset/test/thick_slice',
+                data_format='*.jpg',
+                img_size=img_size,
+                with_label=True,
+                with_name=False,
+                with_systhesis=False,
+                transforms_cfg=dict(
+                    Resize=dict(name='Resize',size=(img_size,img_size)),
+                    ToTensor=dict(name='ToTensor')
+                ),
+            ),
+        ),
+        losses=dict(
+            GANLoss=dict(name='LSGANLoss',penalty_factor=1.),
+            ReflectanceLoss=dict(name='L1Loss'),
+            AlphaLoss=dict(name='L1Loss'),
+            factor=[1,1,1]
+        ),
+        generator_optimizer=dict(
+            name='RMSProp',
+            lr=.1e-6 #.1e-5 when only train GAN
+        ),
+        discrimator_optimizer=dict(
+            name='RMSProp',
+            lr=.1e-5 ##.1e-4 when only train GAN
+        ),
+        matting_optimizer=dict(
+            name='Adam',
+            lr=1e-4
+        ),
+        checkpoints=dict(
+            gan_checkpoints_path=r'checkpoints/cloud_matting_LSGAN_resnet50',
+            checkpoints_path=r'checkpoints/cloud_matting_LSGAN_resnet50',
+            save_step=500,
+        ),
+        lr_schedule=dict(
+            name='stepLR',
+            step_size=500,
+            gamma=0.95
+        ),
+        log=dict(
+            log_path=r'log/cloud_matting_LSGAN_resnet50',
+            log_step=100,
+            with_vis=True,
+            vis_path=r'../results/train_vis_LSGAN_resnet50'
+        ),
+    ),
+    test_cfg=dict(
+        mode='matting',#matting or generation
+        batch_size=1,
+        device='cuda:0',
+        num_workers=1,
+        test_data=dict(
+            data_path=r'../dataset/test',
+            data_format='th*_slice/*.jpg',
+            img_size=img_size,
+            with_label=False,
+            with_name=True,
+            with_systhesis=False,
+            transforms_cfg=dict(
+                Resize=dict(name='Resize',size=(img_size,img_size)),
+                ToTensor=dict(name='ToTensor')
+            ),
+        ),
+        checkpoints=dict(
+            checkpoints_path=r'checkpoints/cloud_matting_LSGAN_resnet50',
+
+        ),
+
+        log=dict(
+            result_file=r'log/cloud_matting_LSGAN_resnet50',
+            with_vis=True,
+            vis_path=r'../results/cloud_matting_LSGAN_resnet50'
+        ),
+
+    )
+)
+
