@@ -6,7 +6,7 @@ The detection and removal of cloud in remote sensing images are essential for ea
 
 ![Overview](fig/overview.png)
 
-In this repository, we implement the training and testing of the cloud matting model with pytorch and also release the dataset we used in our paper. With the code, you can also try on your own dataset by following the instructions below.
+In this repository, we implement the training and testing of the cloud matting model with pytorch and also release the dataset we used in our paper. With the code, you can also try on your own dataset by following the instructions below. [Tensorflow Code.](https://github.com/flyakon/CloudMattingGAN.git)
 
 # Requirements
 
@@ -15,7 +15,6 @@ In this repository, we implement the training and testing of the cloud matting m
 - CUDA 10.1
 - CUDNN 7.5
 
-See also in [Requirements.txt](requirements.txt).
 
 # Setup
 
