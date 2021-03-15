@@ -12,7 +12,7 @@ parse.add_argument('--config_file',default=r'configs/cloud_LSGAN_resnet50_cfg.py
 #
 parse.add_argument('--checkpoints_path',default=None,type=str)
 parse.add_argument('--log_path',default=None,type=str)
-parse.add_argument('--with_matting',action='store_false')
+parse.add_argument('--with_matting',action='store_true')
 
 if __name__=='__main__':
     args = parse.parse_args()

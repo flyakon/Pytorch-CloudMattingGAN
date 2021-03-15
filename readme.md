@@ -6,13 +6,13 @@ The detection and removal of cloud in remote sensing images are essential for ea
 
 ![Overview](fig/overview.png)
 
-In this repository, we implement the training and testing of the cloud matting model with tensorflow and also release the dataset we used in our paper. With the code, you can also try on your own dataset by following the instructions below.
+In this repository, we implement the training and testing of the cloud matting model with pytorch and also release the dataset we used in our paper. With the code, you can also try on your own dataset by following the instructions below.
 
 # Requirements
 
-- Python 3.5
-- Tensorflow 1.9
-- CUDA 9.0
+- Python 3.5 or higher
+- Pytorch 1.7
+- CUDA 10.1
 - CUDNN 7.5
 
 See also in [Requirements.txt](requirements.txt).
@@ -22,8 +22,8 @@ See also in [Requirements.txt](requirements.txt).
 1. Clone this repo:
 
    ```
-   git clone https://github.com/flyakon/CloudMattingGAN.git 
-   cd CloudMattingGAN
+   git clone https://github.com/flyakon/Pytorch-CloudMattingGAN.git
+   cd Pytorch-CloudMattingGAN
    ```
 
 2. Here we only upload a small part of our dataset. The complete dataset can be downloaded from: 1) [Google Driver](https://drive.google.com/open?id=1MIBstoZI1hJ2Rio2CP5Gq1KLJ0IVC1Rd); 2) [BaiduYun](https://pan.baidu.com/s/17Lfh5LpXrTsxkwFdoi_Jhw) (Key: 0626).
@@ -34,39 +34,25 @@ See also in [Requirements.txt](requirements.txt).
    It is recommended firstly to train the Generative Adversarial Networks for 2000 steps.(Optional)
 
    ``````shell
-   python cloud_generation.py --checkpoint_gan=model/LSGAN  \
-   						   --gan_model=LSGAN \
-   						   --sample_dir=sample \
-   						   --iter_step=2001 \
-   						   --image_dir=dataset/train
+   python train.py --config_file configs/cloud_LSGAN_resnet50_cfg.py
    ``````
 
-
+4. Then train cloud matting model
 
    ``````shell
-   python train.py --gan_model=LSGAN \
-   				--batch_size=2 \
-   				--model_path=model/CloudMattingNet_LSGAN \
-   				--net_name=mattingnet \
-   				--logdir=log \
-   				--sample_dir=sample \
-   				--iter_step=38002 \
-   				--image_dir=dataset/train \
-   				--checkpoint_gan=model/LSGAN \
-   				--sample_dir=sample
+	python train.py --config_file configs/cloud_LSGAN_resnet50_cfg.py\
+   					--with_matting
    ``````
 
+5. Test Cloud Matting Net
 
-4. Test Cloud Matting Net
+``````shell
+python test.py --config_file configs/cloud_LSGAN_resnet50_cfg.py
+``````
 
-   ``````shell
-   python test.py  --model_path=model/CloudMattingNet_LSGAN \
-   				--net_name=mattingnet  \
-   				--testDataPath=dataset\test\thin_slice \
-   				--result_path=result
-   ``````
+**We will give soon: 1) the meaning of parameters in configuration file; 2) more GAN types supported; 3) model weights file**
 
-# Citation
+#Citation
 
 If you find the code useful, please cite:
 
